@@ -1,0 +1,13 @@
+name: "zhenxunflow"
+description: "Manage publish related issues in zhenxun plugins index"
+author: "AkshiCoin <i@loli.vet>"
+inputs:
+  config:
+    description: "JSON with settings as described in the README"
+    required: true
+runs:
+  using: "docker"
+  image: "Dockerfile"
+branding:
+  icon: "box"
+  color: "orange"
