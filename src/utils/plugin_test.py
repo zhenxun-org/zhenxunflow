@@ -417,7 +417,7 @@ class PluginTest:
                 return self.plugin_list[package_name]
 
 
-async def test() -> None:
+async def main_test() -> None:
     issue_body = """
 ### 插件名称
 github订阅
