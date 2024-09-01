@@ -108,11 +108,13 @@ class Driver(BaseDriver, ASGIMixin, HTTPClientMixin, WebSocketClientMixin):
 
 RUNNER_SCRIPT = """import json
 import os
+import json
 import asyncio
 from pathlib import Path
 
-from nonebot import init, load_plugin, logger, require, load_plugins
 from pydantic import BaseModel
+from nonebot.adapters.onebot.v11 import Adapter as OneBotV11Adapter
+from nonebot import init, logger, get_driver, load_plugin, load_plugins
 
 
 class SetEncoder(json.JSONEncoder):
@@ -123,14 +125,14 @@ class SetEncoder(json.JSONEncoder):
 
 
 init()
+driver = get_driver()
+driver.register_adapter(OneBotV11Adapter)
 load_plugins("zhenxun/builtin_plugins")
-from zhenxun.builtin_plugins.plugin_store.data_source import ShopManage, download_file
+from zhenxun.builtin_plugins.plugin_store.data_source import ShopManage
 
-url_path = ShopManage.get_url_path("{module_path}", {is_dir})
-if not url_path:
-    logger.error("插件下载地址构建失败...")
-    exit(1)
-asyncio.run(download_file("{github_download_url}".format(url_path), True, "{github_download_url}".split("/contents/")[0] + "/contents/"))
+asyncio.run(
+    ShopManage.install_plugin_with_repo("{github_url}", "{module_path}", {is_dir}, True)
+)
 plugin = load_plugin(Path(__file__).parent / "zhenxun"/ "plugins" / "{module_name}")
 
 if not plugin:
@@ -342,8 +344,8 @@ class PluginTest:
                 f.write("ENVIRONMENT=dev")
             # 如果提供了插件配置项，则写入配置文件
             if self.config is not None:
-                with open(self.path / ".env.prod", "w", encoding="utf8") as f:
-                    f.write(self.config)
+                with open(self.path / ".env.dev", "a+", encoding="utf8") as f:
+                    f.write("\n" + self.config)
 
             with open(self.path / "fake.py", "w", encoding="utf8") as f:
                 f.write(FAKE_SCRIPT)
@@ -354,7 +356,6 @@ class PluginTest:
                         module_name=self.module_name,
                         module_path=self.module_path,
                         github_url=self.github_url,
-                        github_download_url=self.get_github_download_url(),
                         is_dir=self.is_dir,
                         deps="\n".join([f"require('{i}')" for i in self._deps]),
                     )
@@ -387,12 +388,6 @@ class PluginTest:
                 self._log_output(f"    {i}")
             for i in _err:
                 self._log_output(f"    {i}")
-
-    def get_github_download_url(self) -> str:
-        username, repo = re.match(
-            r"https://github.com/(.+)/(.+)(?:\.git)?", self.github_url
-        ).groups()
-        return f"https://api.github.com/repos/{username}/{repo}/contents/{{}}?ref=main"
 
     def _log_output(self, output: str) -> None:
         """记录输出，同时打印到控制台"""
