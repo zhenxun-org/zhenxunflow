@@ -48,6 +48,21 @@ def validate_info(
         plugin_test_result = raw_data.get("plugin_test_result")
         plugin_test_output = raw_data.get("plugin_test_output")
         plugin_test_metadata = raw_data.get("plugin_test_metadata")
+        if previous_data := raw_data.get("previous_data"):
+            if old_data := previous_data.get(raw_data["name"]):
+                for old_key, old_value in old_data.items():
+                    if data[old_key] != old_value:
+                        break
+                else:
+                    errors.append(
+                        {
+                            "loc": ("previous_data",),
+                            "msg": "与上次发布的数据相同。",
+                            "type": "previous_data",
+                            "ctx": {"previous_data": previous_data, "data": data},
+                            "input": None,
+                        }
+                    )
 
         if plugin_test_metadata is None and not skip_plugin_test:
             errors.append(

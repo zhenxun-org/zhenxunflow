@@ -9,6 +9,8 @@ SKIP_PLUGIN_TEST_COMMENT = "/skip"
 
 COMMIT_MESSAGE_PREFIX = ":beers: publish"
 
+UPDATE_MESSAGE_PREFIX = ":tada: update"
+
 BRANCH_NAME_PREFIX = "publish/issue"
 
 TITLE_MAX_LENGTH = 50

@@ -24,6 +24,7 @@ from .constants import (
     PLUGIN_NAME_PATTERN,
     PLUGIN_STRING_LIST,
     SKIP_PLUGIN_TEST_COMMENT,
+    UPDATE_MESSAGE_PREFIX,
 )
 from .models import RepoInfo
 from .render import render_comment
@@ -96,9 +97,18 @@ def get_type_by_commit_message(message: str) -> PublishType | None:
         return PublishType.PLUGIN
 
 
-def commit_and_push(result: ValidationDict, branch_name: str, issue_number: int):
+def commit_and_push(
+    result: ValidationDict,
+    branch_name: str,
+    issue_number: int,
+    old_version: str,
+    new_version: str,
+):
     """提交并推送"""
-    commit_message = f"{COMMIT_MESSAGE_PREFIX} {result['type'].value.lower()} {result['name']} (#{issue_number})"
+    if old_version:
+        commit_message = f"{UPDATE_MESSAGE_PREFIX} {result['type'].value.lower()} {result['name']} to v{new_version} (#{issue_number})"
+    else:
+        commit_message = f"{COMMIT_MESSAGE_PREFIX} {result['type'].value.lower()} {result['name']} (#{issue_number})"
 
     run_shell_command(["git", "config", "--global", "user.name", result["author"]])
     user_email = f"{result['author']}@users.noreply.github.com"
@@ -213,8 +223,10 @@ async def resolve_conflict_pull_requests(
             run_shell_command(["git", "checkout", plugin_config.input_config.base])
             # 切换到对应分支
             run_shell_command(["git", "switch", "-C", pull.head.ref])
-            update_file(result)
-            commit_and_push(result, pull.head.ref, issue_number)
+            old_version, new_version = update_file(result)
+            commit_and_push(
+                result, pull.head.ref, issue_number, old_version, new_version
+            )
             logger.info("拉取请求更新完毕")
 
 
@@ -244,9 +256,13 @@ def generate_validation_dict_from_file(
     )
 
 
-def update_file(result: ValidationDict) -> None:
+def update_file(result: ValidationDict) -> tuple[str, str]:
     """更新文件"""
     new_data = result["data"]
+    old_version, new_version = (
+        "",
+        new_data["version"],
+    )
     match result["type"]:
         case PublishType.PLUGIN:
             path = plugin_config.input_config.plugin_path
@@ -264,16 +280,19 @@ def update_file(result: ValidationDict) -> None:
                     "github_url": new_data["github_url"],
                 }
             }
-
     logger.info(f"正在更新文件: {path}")
     with path.open("r", encoding="utf-8") as f:
         data: dict[str, dict[str, str]] = json.load(f)
+        if (name := next(iter(new_data.keys()))) in data:
+            old_version = data[name]["version"]
     with path.open("w", encoding="utf-8") as f:
         data.update(new_data)
         json.dump(data, f, ensure_ascii=False, indent=2)
         # 结尾加上换行符，不然会被 pre-commit fix
         f.write("\n")
     logger.info("文件更新完成")
+
+    return old_version, new_version
 
 
 async def should_skip_plugin_test(

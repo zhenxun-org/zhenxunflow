@@ -198,8 +198,16 @@ async def handle_publish_check(
             # 创建新分支
             run_shell_command(["git", "switch", "-C", branch_name])
             # 更新文件并提交更改
-            update_file(result)
-            commit_and_push(result, branch_name, issue_number)
+            old_version, new_version = update_file(result)
+            commit_and_push(
+                result,
+                branch_name,
+                issue_number,
+                old_version,
+                new_version,
+            )
+            if old_version:
+                title += f" (v{old_version} -> v{new_version})"
             # 创建拉取请求
             await create_pull_request(
                 bot, repo_info, result, branch_name, issue_number, title
