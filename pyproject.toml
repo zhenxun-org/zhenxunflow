@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zhenxunflow"
-version = "1.0.0"
+version = "1.0.2"
 description = ""
 authors = ["AkashiCoin <i@loli.vet>"]
 license = "MIT"
