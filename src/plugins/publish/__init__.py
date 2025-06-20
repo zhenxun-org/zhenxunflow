@@ -28,6 +28,8 @@ from .utils import (
     commit_and_push,
     create_pull_request,
     ensure_issue_content,
+    ensure_issue_plugin_test_button,
+    ensure_issue_plugin_test_button_in_progress,
     resolve_conflict_pull_requests,
     run_shell_command,
     should_skip_plugin_test,
@@ -174,6 +176,10 @@ async def handle_publish_check(
             logger.info("议题未开启，已跳过")
             await publish_check_matcher.finish()
 
+        # await ensure_issue_plugin_test_button_in_progress(
+        #     bot, repo_info, issue_number, issue.body or ""
+        # )
+
         # 是否需要跳过插件测试
         plugin_config.skip_plugin_test = await should_skip_plugin_test(
             bot, repo_info, issue_number
@@ -186,7 +192,9 @@ async def handle_publish_check(
         # 检查是否满足发布要求
         # 仅在通过检查的情况下创建拉取请求
         result = validate_info_from_issue(issue, publish_type)
-
+        # await ensure_issue_plugin_test_button(
+        #     bot, repo_info, issue_number, issue.body or ""
+        # )
         # 设置拉取请求与议题的标题
         # 限制标题长度，过长的标题不好看
         title = f"{publish_type.value}: {result['name'][:TITLE_MAX_LENGTH]}"

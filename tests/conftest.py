@@ -44,8 +44,9 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
     plugin_path = tmp_path / "plugins.json"
     with plugin_path.open("w") as f:
         json.dump(
-            {
-                "plugin_name": {
+            [
+                {
+                    "plugin_name": "plugin_name",
                     "module": "module",
                     "module_path": "module_path",
                     "description": "description",
@@ -56,7 +57,7 @@ async def app(app: App, tmp_path: Path, mocker: MockerFixture):
                     "is_dir": True,
                     "github_url": "https://github.com/author/module",
                 }
-            },
+            ],
             f,
         )
 

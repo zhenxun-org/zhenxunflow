@@ -75,9 +75,9 @@ async def test_process_publish_check(
     plugin_config.plugin_test_result = True
 
     with open(tmp_path / "plugins.json", "w") as f:
-        json.dump({}, f)
+        json.dump([], f)
 
-    check_json_data(plugin_config.input_config.plugin_path, {})
+    check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
@@ -203,8 +203,9 @@ async def test_process_publish_check(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {
-            "test": {
+        [
+            {
+                "name": "test",
                 "module": "module",
                 "module_path": "module_path",
                 "description": "description",
@@ -215,7 +216,7 @@ async def test_process_publish_check(
                 "is_dir": True,
                 "github_url": "https://github.com/author/module",
             }
-        },
+        ],
     )
 
     assert mocked_api["github_url"].called
@@ -267,8 +268,9 @@ async def test_process_update_check(
         version="0.2",
     )
     plugin_config.plugin_test_result = True
-    old_plugins = {
-        "test": {
+    old_plugins = [
+        {
+            "name": "test",
             "module": "module",
             "module_path": "module_path",
             "description": "description",
@@ -279,7 +281,7 @@ async def test_process_update_check(
             "is_dir": True,
             "github_url": "https://github.com/author/module",
         }
-    }
+    ]
 
     with open(tmp_path / "plugins.json", "w") as f:
         json.dump(old_plugins, f)
@@ -420,8 +422,9 @@ async def test_process_update_check(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {
-            "test": {
+        [
+            {
+                "name": "test",
                 "module": "module",
                 "module_path": "module_path",
                 "description": "description",
@@ -432,7 +435,7 @@ async def test_process_update_check(
                 "is_dir": True,
                 "github_url": "https://github.com/author/module",
             }
-        },
+        ],
     )
 
     assert mocked_api["github_url"].called
@@ -484,8 +487,9 @@ async def test_process_update_check_not_modified(
         version="0.1",
     )
     plugin_config.plugin_test_result = True
-    old_plugins = {
-        "test": {
+    old_plugins = [
+        {
+            "name": "test",
             "module": "module",
             "module_path": "module_path",
             "description": "description",
@@ -496,7 +500,7 @@ async def test_process_update_check_not_modified(
             "is_dir": True,
             "github_url": "https://github.com/author/module",
         }
-    }
+    ]
 
     with open(tmp_path / "plugins.json", "w") as f:
         json.dump(old_plugins, f)
@@ -577,8 +581,9 @@ async def test_process_update_check_not_modified(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {
-            "test": {
+        [
+            {
+                "name": "test",
                 "module": "module",
                 "module_path": "module_path",
                 "description": "description",
@@ -589,7 +594,7 @@ async def test_process_update_check_not_modified(
                 "is_dir": True,
                 "github_url": "https://github.com/author/module",
             }
-        },
+        ],
     )
 
     assert mocked_api["github_url"].called
@@ -644,9 +649,9 @@ async def test_edit_title(
     plugin_config.plugin_test_result = True
 
     with open(tmp_path / "plugins.json", "w") as f:
-        json.dump({}, f)
+        json.dump([], f)
 
-    check_json_data(plugin_config.input_config.plugin_path, {})
+    check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
@@ -796,8 +801,9 @@ async def test_edit_title(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {
-            "test1": {
+        [
+            {
+                "name": "test1",
                 "module": "module",
                 "module_path": "module_path",
                 "description": "description",
@@ -808,7 +814,7 @@ async def test_edit_title(
                 "is_dir": True,
                 "github_url": "https://github.com/author/module",
             }
-        },
+        ],
     )
 
     assert mocked_api["github_url"].called
@@ -862,9 +868,9 @@ async def test_edit_title_too_long(
     plugin_config.plugin_test_result = True
 
     with open(tmp_path / "plugins.json", "w") as f:
-        json.dump({}, f)
+        json.dump([], f)
 
-    check_json_data(plugin_config.input_config.plugin_path, {})
+    check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
@@ -945,7 +951,7 @@ async def test_edit_title_too_long(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {},
+        [],
     )
 
     assert mocked_api["github_url"].called
@@ -1000,9 +1006,9 @@ async def test_process_publish_check_not_pass(
     plugin_config.plugin_test_result = True
 
     with open(tmp_path / "plugins.json", "w") as f:
-        json.dump({}, f)
+        json.dump([], f)
 
-    check_json_data(plugin_config.input_config.plugin_path, {})
+    check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
@@ -1078,7 +1084,7 @@ async def test_process_publish_check_not_pass(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {},
+        [],
     )
 
     assert mocked_api["github_url_failed"].called
@@ -1293,9 +1299,9 @@ async def test_convert_pull_request_to_draft(
     plugin_config.plugin_test_result = True
 
     with open(tmp_path / "plugins.json", "w") as f:
-        json.dump({}, f)
+        json.dump([], f)
 
-    check_json_data(plugin_config.input_config.plugin_path, {})
+    check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
@@ -1380,7 +1386,7 @@ async def test_convert_pull_request_to_draft(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {},
+        [],
     )
 
     assert mocked_api["github_url_failed"].called
@@ -1437,9 +1443,9 @@ async def test_process_publish_check_ready_for_review(
     plugin_config.plugin_test_result = True
 
     with open(tmp_path / "plugins.json", "w") as f:
-        json.dump({}, f)
+        json.dump([], f)
 
-    check_json_data(plugin_config.input_config.plugin_path, {})
+    check_json_data(plugin_config.input_config.plugin_path, [])
 
     async with app.test_matcher(publish_check_matcher) as ctx:
         adapter = get_adapter(Adapter)
@@ -1577,8 +1583,9 @@ async def test_process_publish_check_ready_for_review(
     # 检查文件是否正确
     check_json_data(
         plugin_config.input_config.plugin_path,
-        {
-            "test": {
+        [
+            {
+                "name": "test",
                 "module": "module",
                 "module_path": "module_path",
                 "description": "description",
@@ -1589,7 +1596,7 @@ async def test_process_publish_check_ready_for_review(
                 "is_dir": True,
                 "github_url": "https://github.com/author/module",
             }
-        },
+        ],
     )
 
     assert mocked_api["github_url"].called

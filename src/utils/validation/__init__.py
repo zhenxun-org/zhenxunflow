@@ -49,7 +49,22 @@ def validate_info(
         plugin_test_output = raw_data.get("plugin_test_output")
         plugin_test_metadata = raw_data.get("plugin_test_metadata")
         if previous_data := raw_data.get("previous_data"):
-            if old_data := previous_data.get(raw_data["name"]):
+            # 处理previous_data为列表的情况
+            if isinstance(previous_data, list):
+                # 在列表中查找匹配模块名的项
+                old_data = next(
+                    (
+                        item
+                        for item in previous_data
+                        if item.get("module") == raw_data.get("module")
+                    ),
+                    None,
+                )
+            else:
+                # 原有的字典处理方式
+                old_data = previous_data.get(raw_data["name"])
+
+            if old_data:
                 for old_key, old_value in old_data.items():
                     if data[old_key] != old_value:
                         break

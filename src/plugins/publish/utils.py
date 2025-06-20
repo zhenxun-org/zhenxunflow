@@ -1,3 +1,4 @@
+import itertools
 import json
 import re
 import subprocess
@@ -23,6 +24,10 @@ from .constants import (
     PLUGIN_MODULE_PATH_PATTERN,
     PLUGIN_NAME_PATTERN,
     PLUGIN_STRING_LIST,
+    PLUGIN_TEST_BUTTON_IN_PROGRESS_STRING,
+    PLUGIN_TEST_BUTTON_STRING,
+    PLUGIN_TEST_PATTERN,
+    PLUGIN_TEST_STRING,
     SKIP_PLUGIN_TEST_COMMENT,
     UPDATE_MESSAGE_PREFIX,
 )
@@ -267,8 +272,9 @@ def update_file(result: ValidationDict) -> tuple[str, str]:
         case PublishType.PLUGIN:
             path = plugin_config.input_config.plugin_path
             # 仓库内只需要这部分数据
-            new_data = {
-                new_data["name"]: {
+            new_data = [
+                {
+                    "name": new_data["name"],
                     "module": new_data["module"],
                     "module_path": new_data["module_path"],
                     "description": new_data["description"],
@@ -279,14 +285,26 @@ def update_file(result: ValidationDict) -> tuple[str, str]:
                     "is_dir": new_data["is_dir"],
                     "github_url": new_data["github_url"],
                 }
-            }
+            ]
     logger.info(f"正在更新文件: {path}")
     with path.open("r", encoding="utf-8") as f:
-        data: dict[str, dict[str, str]] = json.load(f)
-        if (name := next(iter(new_data.keys()))) in data:
-            old_version = data[name]["version"]
+        data: list[dict[str, str]] = json.load(f)
+        # 查找匹配模块名的项目来获取旧版本号
+        module_name = new_data[0]["module"]  # 获取要更新的模块名
+        for item in data:
+            if item["module"] == module_name:
+                old_version = item["version"]
+                break
     with path.open("w", encoding="utf-8") as f:
-        data.update(new_data)
+        # 检查插件是否已存在
+        found = False
+        for item, _new_data in itertools.product(data, new_data):
+            if item["module"] == _new_data["module"]:
+                item.update(_new_data)
+                found = True
+        # 如果插件不存在，则添加到列表中
+        if not found:
+            data.extend(new_data)
         json.dump(data, f, ensure_ascii=False, indent=2)
         # 结尾加上换行符，不然会被 pre-commit fix
         f.write("\n")
@@ -428,3 +446,51 @@ async def ensure_issue_content(
             body="\n\n".join(new_content),
         )
         logger.info("检测到议题内容缺失，已更新")
+
+
+async def ensure_issue_plugin_test_button(
+    bot: Bot, repo_info: RepoInfo, issue_number: int, issue_body: str
+):
+    """确保议题内容中包含插件测试按钮"""
+    # issue_body = handler.issue.body or ""
+
+    new_content = f"{ISSUE_FIELD_TEMPLATE.format(PLUGIN_TEST_STRING)}\n\n{PLUGIN_TEST_BUTTON_STRING}"
+
+    match = PLUGIN_TEST_PATTERN.search(issue_body)
+    if not match:
+        new_content = f"{issue_body}\n\n{new_content[0]}"
+        logger.info("为议题添加插件重测按钮")
+    else:
+        # 将列表转换为字符串
+        new_content_str = new_content[0]
+        new_content = PLUGIN_TEST_PATTERN.sub(new_content_str, issue_body)
+        logger.info("重置插件重测按钮文本")
+
+    await bot.rest.issues.async_update(
+        **repo_info.model_dump(),
+        issue_number=issue_number,
+        body=new_content,
+    )
+    logger.info("检测到议题内容缺失，已更新")
+
+
+async def ensure_issue_plugin_test_button_in_progress(
+    bot: Bot, repo_info: RepoInfo, issue_number: int, issue_body: str
+):
+    """确保议题内容中包含插件测试进行中的提示"""
+    new_content = f"{ISSUE_FIELD_TEMPLATE.format(PLUGIN_TEST_STRING)}\n\n{PLUGIN_TEST_BUTTON_IN_PROGRESS_STRING}"
+
+    match = PLUGIN_TEST_PATTERN.search(issue_body)
+    if not match:
+        new_content = f"{issue_body}\n\n{new_content}"
+        logger.info("为议题添加插件测试进行中的提示")
+    else:
+        new_content = PLUGIN_TEST_PATTERN.sub(new_content, issue_body)
+        logger.info("重置插件测试进行中文本")
+
+    await bot.rest.issues.async_update(
+        **repo_info.model_dump(),
+        issue_number=issue_number,
+        body=new_content,
+    )
+    logger.info("检测到议题内容缺失，已更新")
