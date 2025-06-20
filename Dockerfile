@@ -14,8 +14,10 @@ ENV PATH="${PATH}:/root/.local/bin"
 # 确认Poetry版本
 RUN poetry --version
 
-# 导出依赖
-RUN poetry export --format requirements.txt --output requirements.txt --without-hashes
+# 使用Poetry安装依赖，然后用pip freeze生成requirements.txt
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-interaction --no-ansi \
+    && pip freeze > requirements.txt
 
 FROM python:3.11-slim-bullseye
 
