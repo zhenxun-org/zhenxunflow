@@ -6,18 +6,19 @@ COPY ./pyproject.toml ./poetry.lock* /tmp/
 
 RUN curl -sSL https://install.python-poetry.org -o install-poetry.py
 
-# 安装指定版本的Poetry 1.x (1.6.1是稳定的版本)
-RUN python install-poetry.py --version 1.6.1 --yes
+# 安装最新版本的Poetry 2.x
+RUN python install-poetry.py --yes
 
 ENV PATH="${PATH}:/root/.local/bin"
 
 # 确认Poetry版本
 RUN poetry --version
 
-# 使用Poetry安装依赖，然后用pip freeze生成requirements.txt
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi \
-    && pip freeze > requirements.txt
+# 安装export插件（Poetry 2.x需要单独安装这个插件）
+RUN poetry self add poetry-plugin-export
+
+# 导出依赖
+RUN poetry export --output requirements.txt --without-hashes
 
 FROM python:3.11-slim-bullseye
 
