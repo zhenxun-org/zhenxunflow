@@ -6,10 +6,15 @@ COPY ./pyproject.toml ./poetry.lock* /tmp/
 
 RUN curl -sSL https://install.python-poetry.org -o install-poetry.py
 
-RUN python install-poetry.py --yes
+# 安装指定版本的Poetry 1.x (1.6.1是稳定的版本)
+RUN python install-poetry.py --version 1.6.1 --yes
 
 ENV PATH="${PATH}:/root/.local/bin"
 
+# 确认Poetry版本
+RUN poetry --version
+
+# 导出依赖
 RUN poetry export --format requirements.txt --output requirements.txt --without-hashes
 
 FROM python:3.11-slim-bullseye
