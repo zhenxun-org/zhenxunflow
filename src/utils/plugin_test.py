@@ -123,7 +123,7 @@ class SetEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
-
+os.environ["PYTEST_CURRENT_TEST"] = "1"
 init()
 driver = get_driver()
 driver.register_adapter(OneBotV11Adapter)
