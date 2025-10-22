@@ -153,11 +153,16 @@ if not plugin:
 else:
     if plugin.metadata:
         metadata = {{
+            "name": "{plugin_name}",
+            "module": "{module_name}",
+            "module_path": "{module_path}",
             "description": plugin.metadata.description,
             "usage": plugin.metadata.usage,
             "author": plugin.metadata.extra["author"],
             "version": plugin.metadata.extra["version"],
             "plugin_type": plugin.metadata.extra["plugin_type"],
+            "is_dir": {is_dir},
+            "github_url": "{github_url}",
         }}
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as f:
             f.write(f"METADATA<<EOF\\n{{json.dumps(metadata, cls=SetEncoder)}}\\nEOF\\n")
