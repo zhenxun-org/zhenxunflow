@@ -129,9 +129,22 @@ driver = get_driver()
 driver.register_adapter(OneBotV11Adapter)
 load_plugins("zhenxun/builtin_plugins")
 from zhenxun.builtin_plugins.plugin_store.data_source import StoreManager
+from zhenxun.builtin_plugins.plugin_store.models import StorePluginInfo
 
+plugin_info = StorePluginInfo(
+    name="{plugin_name}",
+    module="{module_name}",
+    module_path="{module_path}",
+    description="",
+    usage="",
+    author="",
+    version="",
+    plugin_type="NORMAL",
+    is_dir={is_dir},
+    github_url="{github_url}"
+)
 asyncio.run(
-    StoreManager.install_plugin_with_repo("{github_url}", "{module_path}", {is_dir}, True)
+    StoreManager.install_plugin_with_repo(plugin_info, True)
 )
 plugin = load_plugin(Path(__file__).parent / "zhenxun"/ "plugins" / "{module_name}")
 
