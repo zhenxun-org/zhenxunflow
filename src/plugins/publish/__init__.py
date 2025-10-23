@@ -46,7 +46,15 @@ def bypass_git():
 
 def install_pre_commit_hooks():
     """安装 pre-commit 钩子"""
+    import os
+
+    if not os.path.exists(".pre-commit-config.yaml"):
+        logger.warning(".pre-commit-config.yaml 不存在，暂时跳过 pre-commit hooks 安装")
+        return
+
+    logger.info("正在执行: pre-commit install --install-hooks")
     run_shell_command(["pre-commit", "install", "--install-hooks"])
+    logger.info("pre-commit hooks 安装成功")
 
 
 async def pr_close_rule(
