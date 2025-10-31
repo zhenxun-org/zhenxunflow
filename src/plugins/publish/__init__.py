@@ -1,3 +1,5 @@
+import subprocess
+
 from nonebot import logger, on_type
 from nonebot.adapters.github import (
     GitHubBot,
@@ -56,7 +58,16 @@ def install_pre_commit_hooks():
     try:
         run_shell_command(["pre-commit", "install", "--install-hooks"])
     except Exception as e:
-        logger.error(f"pre-commit hooks 安装失败: {e}")
+        # 尝试输出更详细的错误信息（包含退出码、标准输出与标准错误）
+        if isinstance(e, subprocess.CalledProcessError):
+            stdout = e.stdout.decode(errors="ignore") if e.stdout else ""
+            stderr = e.stderr.decode(errors="ignore") if e.stderr else ""
+            logger.error(
+                f"pre-commit hooks 安装失败 (exit {e.returncode}):\n"
+                f"[STDOUT]\n{stdout}\n[STDERR]\n{stderr}"
+            )
+        else:
+            logger.error(f"pre-commit hooks 安装失败: {e}")
         return
     logger.info("pre-commit hooks 安装成功")
 
