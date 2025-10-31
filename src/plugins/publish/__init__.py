@@ -53,7 +53,11 @@ def install_pre_commit_hooks():
         return
 
     logger.info("正在执行: pre-commit install --install-hooks")
-    run_shell_command(["pre-commit", "install", "--install-hooks"])
+    try:
+        run_shell_command(["pre-commit", "install", "--install-hooks"])
+    except Exception as e:
+        logger.error(f"pre-commit hooks 安装失败: {e}")
+        return
     logger.info("pre-commit hooks 安装成功")
 
 
