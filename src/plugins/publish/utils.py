@@ -119,17 +119,22 @@ def commit_and_push(
     user_email = f"{result['author']}@users.noreply.github.com"
     run_shell_command(["git", "config", "--global", "user.email", user_email])
     run_shell_command(["git", "add", "-A"])
-    # 若无变更，跳过提交
-    status_result = run_shell_command(["git", "status", "--porcelain"])
-    if status_result.stdout.strip():
-        try:
-            run_shell_command(["git", "commit", "-m", commit_message])
-        except Exception:
+    try:
+        run_shell_command(["git", "commit", "-m", commit_message])
+    except subprocess.CalledProcessError as e:
+        stdout = e.stdout.decode(errors="ignore") if e.stdout else ""
+        stderr = e.stderr.decode(errors="ignore") if e.stderr else ""
+        message = f"{stdout}\n{stderr}"
+        # 没有可提交的变更时跳过
+        if (
+            "nothing to commit" in message.lower()
+            or "no changes added to commit" in message.lower()
+        ):
+            logger.info("未检测到文件变更，跳过提交")
+        else:
             # 如果提交失败，因为是 pre-commit hooks 格式化代码导致的，所以需要再次提交
             run_shell_command(["git", "add", "-A"])
             run_shell_command(["git", "commit", "-m", commit_message])
-    else:
-        logger.info("未检测到文件变更，跳过提交")
 
     try:
         run_shell_command(["git", "fetch", "origin"])
