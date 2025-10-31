@@ -125,16 +125,32 @@ def commit_and_push(
         stdout = e.stdout.decode(errors="ignore") if e.stdout else ""
         stderr = e.stderr.decode(errors="ignore") if e.stderr else ""
         message = f"{stdout}\n{stderr}"
-        # 没有可提交的变更时跳过
-        if (
-            "nothing to commit" in message.lower()
-            or "no changes added to commit" in message.lower()
-        ):
+        lower_msg = message.lower()
+        # 没有可提交的变更（兼容中英文提示）
+        nothing_to_commit_markers = [
+            "nothing to commit",
+            "no changes added to commit",
+            "没有要提交的内容",
+            "没有添加要提交的更改",
+            "无可提交的更改",
+        ]
+        if any(m in lower_msg for m in nothing_to_commit_markers):
             logger.info("未检测到文件变更，跳过提交")
         else:
-            # 如果提交失败，因为是 pre-commit hooks 格式化代码导致的，所以需要再次提交
+            # 可能是 pre-commit 修改了文件或需要格式化，先再次 add 后重试提交
             run_shell_command(["git", "add", "-A"])
-            run_shell_command(["git", "commit", "-m", commit_message])
+            try:
+                run_shell_command(["git", "commit", "-m", commit_message])
+            except subprocess.CalledProcessError as e2:
+                stdout2 = e2.stdout.decode(errors="ignore") if e2.stdout else ""
+                stderr2 = e2.stderr.decode(errors="ignore") if e2.stderr else ""
+                message2 = f"{stdout2}\n{stderr2}"
+                lower_msg2 = message2.lower()
+                if any(m in lower_msg2 for m in nothing_to_commit_markers):
+                    logger.info("未检测到文件变更，跳过提交")
+                else:
+                    # 仍然失败，抛出以便上层感知具体错误（例如 lint 未通过等）
+                    raise
 
     try:
         run_shell_command(["git", "fetch", "origin"])
