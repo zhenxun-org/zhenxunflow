@@ -119,12 +119,17 @@ def commit_and_push(
     user_email = f"{result['author']}@users.noreply.github.com"
     run_shell_command(["git", "config", "--global", "user.email", user_email])
     run_shell_command(["git", "add", "-A"])
-    try:
-        run_shell_command(["git", "commit", "-m", commit_message])
-    except Exception:
-        # 如果提交失败，因为是 pre-commit hooks 格式化代码导致的，所以需要再次提交
-        run_shell_command(["git", "add", "-A"])
-        run_shell_command(["git", "commit", "-m", commit_message])
+    # 若无变更，跳过提交
+    status_result = run_shell_command(["git", "status", "--porcelain"])
+    if status_result.stdout.strip():
+        try:
+            run_shell_command(["git", "commit", "-m", commit_message])
+        except Exception:
+            # 如果提交失败，因为是 pre-commit hooks 格式化代码导致的，所以需要再次提交
+            run_shell_command(["git", "add", "-A"])
+            run_shell_command(["git", "commit", "-m", commit_message])
+    else:
+        logger.info("未检测到文件变更，跳过提交")
 
     try:
         run_shell_command(["git", "fetch", "origin"])
