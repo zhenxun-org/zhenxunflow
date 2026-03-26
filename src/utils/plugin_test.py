@@ -146,8 +146,8 @@ plugin_info = StorePluginInfo(
     github_url="{github_url}"
 )
 
-print("==========plugin_name: {plugin_name}==========")
-print("==========branch: {branch}==========")
+logger.info("{plugin_name}")
+logger.info("{branch}")
 
 asyncio.run(
     StoreManager.install_plugin_with_repo(plugin_info, True, branch="{branch}")
