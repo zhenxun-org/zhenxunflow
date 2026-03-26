@@ -145,6 +145,9 @@ plugin_info = StorePluginInfo(
     is_dir={is_dir},
     github_url="{github_url}"
 )
+
+print("==========\nbranch: {branch}\n==========")
+
 asyncio.run(
     StoreManager.install_plugin_with_repo(plugin_info, True, branch="{branch}")
 )
