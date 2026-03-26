@@ -146,7 +146,8 @@ plugin_info = StorePluginInfo(
     github_url="{github_url}"
 )
 
-print("==========\nbranch: {branch}\n==========")
+print("==========plugin_name: {plugin_name}==========")
+print("==========branch: {branch}==========")
 
 asyncio.run(
     StoreManager.install_plugin_with_repo(plugin_info, True, branch="{branch}")
@@ -449,6 +450,9 @@ https://github.com/xuanerwa/zhenxun_github_sub
 
 ### 是否为目录
 是
+
+### 分支名称
+master
 
 ### 插件配置项
 ```
