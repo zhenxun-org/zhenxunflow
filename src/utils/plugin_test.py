@@ -28,6 +28,7 @@ PLUGIN_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("插件名称"))
 PLUGIN_MODULE_NAME_PATTERN = re.compile(ISSUE_PATTERN.format("模块名称"))
 PLUGIN_MODULE_PATH_PATTERN = re.compile(ISSUE_PATTERN.format("模块路径"))
 PLUGIN_GITHUB_URL_PATTERN = re.compile(ISSUE_PATTERN.format("仓库地址"))
+PLUGIN_BRANCH_PATTERN = re.compile(ISSUE_PATTERN.format("分支名称"))
 IS_DIR_PATTERN = re.compile(ISSUE_PATTERN.format("是否为目录"))
 CONFIG_PATTERN = re.compile(r"### 插件配置项\s+```(?:\w+)?\s?([\s\S]*?)```")
 
@@ -202,6 +203,7 @@ class PluginTest:
         module_path: str,
         github_url: str,
         is_dir: bool,
+        branch: str | None = None,
         config: str | None = None,
     ) -> None:
         self.plugin_name = plugin_name
@@ -209,6 +211,7 @@ class PluginTest:
         self.module_path = module_path
         self.github_url = github_url
         self.is_dir = is_dir
+        self.branch = branch.strip() if branch and branch.strip() else "main"
         self.config = config
         self._plugin_list = None
 
@@ -370,6 +373,7 @@ class PluginTest:
                         module_path=self.module_path,
                         github_url=self.github_url,
                         is_dir=self.is_dir,
+                        branch=self.branch,
                         deps="\n".join([f"require('{i}')" for i in self._deps]),
                     )
                 )
@@ -452,6 +456,7 @@ SYSTEM_PROXY="http://127.0.0.1:7890"
     module_path = PLUGIN_MODULE_PATH_PATTERN.search(issue_body)
     plugin_github_url = PLUGIN_GITHUB_URL_PATTERN.search(issue_body)
     is_dir_text = IS_DIR_PATTERN.search(issue_body)
+    branch_text = PLUGIN_BRANCH_PATTERN.search(issue_body)
     config = CONFIG_PATTERN.search(issue_body)
 
     if not (
@@ -463,6 +468,7 @@ SYSTEM_PROXY="http://127.0.0.1:7890"
     ):
         print("议题中没有插件信息，已跳过")
         return
+    branch = (branch_text.group(1).strip() if branch_text else "main") or "main"
     is_dir = True
     if is_dir_text.group(1).strip() == "是":
         is_dir = True
@@ -476,6 +482,7 @@ SYSTEM_PROXY="http://127.0.0.1:7890"
         module_path=module_path.group(1).strip(),
         github_url=plugin_github_url.group(1).strip(),
         is_dir=is_dir,
+        branch=branch,
         config=config.group(1).strip() if config else None,
     )
     await test.run()
@@ -518,6 +525,7 @@ async def main():
     module_path = PLUGIN_MODULE_PATH_PATTERN.search(issue_body)
     plugin_github_url = PLUGIN_GITHUB_URL_PATTERN.search(issue_body)
     is_dir_text = IS_DIR_PATTERN.search(issue_body)
+    branch_text = PLUGIN_BRANCH_PATTERN.search(issue_body)
     config = CONFIG_PATTERN.search(issue_body)
 
     if not (
@@ -529,7 +537,7 @@ async def main():
     ):
         print("议题中没有插件信息，已跳过")
         return
-    is_dir = True
+    branch = (branch_text.group(1).strip() if branch_text else "main") or "main"
     if is_dir_text.group(1).strip() == "是":
         is_dir = True
     elif is_dir_text.group(1).strip() == "否":
@@ -542,6 +550,7 @@ async def main():
         module_path=module_path.group(1).strip(),
         github_url=plugin_github_url.group(1).strip(),
         is_dir=is_dir,
+        branch=branch,
         config=config.group(1).strip() if config else None,
     )
     await test.run()
