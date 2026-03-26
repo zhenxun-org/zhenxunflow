@@ -111,6 +111,7 @@ RUNNER_SCRIPT = """import json
 import os
 import json
 import asyncio
+import subprocess
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -145,7 +146,7 @@ plugin_info = StorePluginInfo(
     github_url="{github_url}"
 )
 asyncio.run(
-    StoreManager.install_plugin_with_repo(plugin_info, True)
+    StoreManager.install_plugin_with_repo(plugin_info, True，branch={branch})
 )
 plugin = load_plugin(Path(__file__).parent / "zhenxun"/ "plugins" / "{module_name}")
 
