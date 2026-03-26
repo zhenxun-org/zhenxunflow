@@ -146,7 +146,7 @@ plugin_info = StorePluginInfo(
     github_url="{github_url}"
 )
 asyncio.run(
-    StoreManager.install_plugin_with_repo(plugin_info, True，branch={branch})
+    StoreManager.install_plugin_with_repo(plugin_info, True, branch={branch})
 )
 plugin = load_plugin(Path(__file__).parent / "zhenxun"/ "plugins" / "{module_name}")
 
