@@ -285,7 +285,8 @@ class PluginTest:
         env.pop("VIRTUAL_ENV", None)
         # 启用 LOGURU 的颜色输出
         env["LOGURU_COLORIZE"] = "true"
-		env["UV_PROJECT_ENVIRONMENT"] = ".venv"  # 强制 uv 使用当前目录下的 .venv
+        env["UV_PROJECT_ENVIRONMENT"] = ".venv"
+        # 强制 uv 使用当前目录下的 .venv
 
         return env
 
