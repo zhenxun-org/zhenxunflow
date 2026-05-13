@@ -255,11 +255,10 @@ class PluginTest:
         if not self.test_dir.exists():
             self.test_dir.mkdir()
 
-        await self.create_poetry_project()
         if self._create:
             # await self.show_package_info()
             # await self.show_plugin_dependencies()
-            await self.run_poetry_project()
+            await self.run_uv_project()
 
         # 输出测试结果
         with open(self.github_output_file, "a", encoding="utf8") as f:
@@ -286,38 +285,10 @@ class PluginTest:
         env.pop("VIRTUAL_ENV", None)
         # 启用 LOGURU 的颜色输出
         env["LOGURU_COLORIZE"] = "true"
-        # Poetry 配置
-        # https://python-poetry.org/docs/configuration/#virtualenvsin-project
-        env["POETRY_VIRTUALENVS_IN_PROJECT"] = "true"
-        # https://python-poetry.org/docs/configuration/#virtualenvsprefer-active-python-experimental
-        env["POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON"] = "true"
+		env["UV_PROJECT_ENVIRONMENT"] = ".venv"  # 强制 uv 使用当前目录下的 .venv
+
         return env
 
-    async def create_poetry_project(self) -> None:
-        if not self.path.exists():
-            self.path.mkdir()
-            proc = await create_subprocess_shell(
-                """poetry init -n && sed -i "s/\\^/~/g" pyproject.toml && poetry env info --ansi""",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=self.path,
-                env=self.get_env(),
-            )
-            stdout, stderr = await proc.communicate()
-            code = proc.returncode
-
-            self._create = not code
-            if self._create:
-                print(f"项目 {self.plugin_name} 创建成功。")
-                for i in stdout.decode().strip().splitlines():
-                    print(f"    {i}")
-            else:
-                self._log_output(f"项目 {self.plugin_name} 创建失败：")
-                for i in stderr.decode().strip().splitlines():
-                    self._log_output(f"    {i}")
-        else:
-            self._log_output(f"项目 {self.plugin_name} 已存在，跳过创建。")
-            self._create = True
 
     async def show_package_info(self) -> None:
         if self.path.exists():
@@ -358,7 +329,7 @@ class PluginTest:
             else:
                 self._log_output(f"插件 {self.plugin_name} 依赖获取失败。")
 
-    async def run_poetry_project(self) -> None:
+    async def run_uv_project(self) -> None:
         if self.path.exists():
             # 默认使用 fake 驱动
             with open(self.path / ".env", "w", encoding="utf8") as f:
@@ -385,7 +356,7 @@ class PluginTest:
 
             try:
                 proc = await create_subprocess_shell(
-                    "poetry run python runner.py",
+                    "uv run python runner.py",
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.path,
