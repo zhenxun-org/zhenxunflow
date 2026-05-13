@@ -255,10 +255,10 @@ class PluginTest:
         if not self.test_dir.exists():
             self.test_dir.mkdir()
 
-        if self._create:
+        #if self._create:
             # await self.show_package_info()
             # await self.show_plugin_dependencies()
-            await self.run_uv_project()
+        await self.run_uv_project()
 
         # 输出测试结果
         with open(self.github_output_file, "a", encoding="utf8") as f:
