@@ -255,9 +255,9 @@ class PluginTest:
         if not self.test_dir.exists():
             self.test_dir.mkdir()
 
-        #if self._create:
-            # await self.show_package_info()
-            # await self.show_plugin_dependencies()
+        # if self._create:
+        # await self.show_package_info()
+        # await self.show_plugin_dependencies()
         await self.run_uv_project()
 
         # 输出测试结果
@@ -289,7 +289,6 @@ class PluginTest:
         # 强制 uv 使用当前目录下的 .venv
 
         return env
-
 
     async def show_package_info(self) -> None:
         if self.path.exists():
